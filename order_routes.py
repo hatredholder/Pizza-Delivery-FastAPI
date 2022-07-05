@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi_jwt_auth import AuthJWT
-from models import User, Order
-from schemas import OrderModel
-from database import Session, engine
 from fastapi.encoders import jsonable_encoder
+from fastapi_jwt_auth import AuthJWT
 
+from database import Session, engine
+from models import Order, User
+from schemas import OrderModel
 
 order_router = APIRouter(
     prefix="/order",

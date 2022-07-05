@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
+from fastapi_jwt_auth import AuthJWT
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import Session, engine
 from models import User
-from schemas import SignUpModel, LoginModel
-from fastapi_jwt_auth import AuthJWT
-from fastapi.encoders import jsonable_encoder
+from schemas import LoginModel, SignUpModel
 
 auth_router = APIRouter(
     prefix="/auth",
