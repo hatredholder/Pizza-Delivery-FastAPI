@@ -93,7 +93,7 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     user = session.query(User).filter(User.username == current_user).first()
 
-    if current_user.is_staff:
+    if user.is_staff:
         order = session.query(Order).filter(Order.id == id).first()
 
         return jsonable_encoder(order)
