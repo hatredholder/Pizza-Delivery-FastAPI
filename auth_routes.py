@@ -15,7 +15,7 @@ auth_router = APIRouter(
 session=Session(bind=engine)
 
 @auth_router.get('/')
-async def hello(Authorize: AuthJWT = Depends()):
+def hello(Authorize: AuthJWT = Depends()):
 
     try:
         Authorize.jwt_required()
@@ -31,7 +31,7 @@ async def hello(Authorize: AuthJWT = Depends()):
 @auth_router.post('/signup', 
     status_code=status.HTTP_201_CREATED
 )
-async def signup(user: SignUpModel):
+def signup(user: SignUpModel):
     db_email = session.query(User).filter(User.email==user.email).first()
 
     if db_email:
@@ -61,7 +61,7 @@ async def signup(user: SignUpModel):
     return new_user
 
 @auth_router.post('/login', status_code=status.HTTP_200_OK)
-async def login(user: LoginModel, Authorize: AuthJWT=Depends()):
+def login(user: LoginModel, Authorize: AuthJWT=Depends()):
     db_user = session.query(User).filter(User.username==user.username).first()
 
     if db_user and check_password_hash(db_user.password, user.password):
@@ -80,7 +80,7 @@ async def login(user: LoginModel, Authorize: AuthJWT=Depends()):
     )
 
 @auth_router.get('/refresh')
-async def refresh_tokens(Authorize: AuthJWT = Depends()):
+def refresh_tokens(Authorize: AuthJWT = Depends()):
     try:
         Authorize.jwt_refresh_token_required()
     except Exception as e:
