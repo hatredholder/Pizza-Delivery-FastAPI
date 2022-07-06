@@ -202,7 +202,7 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
             detail="This isn't your order"
         )
 
-@order_router.patch('/status/update/{id}')
+@order_router.patch('/status/{id}')
 def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
     """
         ## Updates an order's status
@@ -210,7 +210,7 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
         Can only be accessed by superusers.
         This route requires:
         - order_status: string
-    """
+    """ 
     try:
         Authorize.jwt_required()
     except Exception as e:
