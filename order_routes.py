@@ -208,3 +208,20 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
         }
 
         return jsonable_encoder(response)
+
+@order_router.delete('/delete/{id}', status_code = status.HTTP_204_NO_CONTENT)
+def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Token"
+        )
+
+    order_to_delete = session.query(Order).filter(Order.id == id).first()
+
+    session.delete(order_to_delete)
+
+    session.commit()
+
+    return order_to_delete
