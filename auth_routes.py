@@ -14,24 +14,21 @@ auth_router = APIRouter(
 
 session=Session(bind=engine)
 
-@auth_router.get('/')
-def hello(Authorize: AuthJWT = Depends()):
-
-    try:
-        Authorize.jwt_required()
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
-
-    return {'hello': 'world'}
 
 @auth_router.post('/signup', 
     status_code=status.HTTP_201_CREATED
 )
 def signup(user: SignUpModel):
+    """
+        ## Creates a user
+        This route signups a new user.
+        This route requires:
+        - username: string
+        - email: string
+        - password: string
+        - is_staff: bool
+        - is_active: bool
+    """
     db_email = session.query(User).filter(User.email==user.email).first()
 
     if db_email:
@@ -62,6 +59,13 @@ def signup(user: SignUpModel):
 
 @auth_router.post('/login', status_code=status.HTTP_200_OK)
 def login(user: LoginModel, Authorize: AuthJWT=Depends()):
+    """
+        ## Logs in a user
+        This route logs in a user.
+        This route requires:
+        - username: string
+        - password: string
+    """
     db_user = session.query(User).filter(User.username==user.username).first()
 
     if db_user and check_password_hash(db_user.password, user.password):
@@ -81,6 +85,12 @@ def login(user: LoginModel, Authorize: AuthJWT=Depends()):
 
 @auth_router.get('/refresh')
 def refresh_tokens(Authorize: AuthJWT = Depends()):
+    """
+        ## Refreshes an access token 
+        This route refreshes an access token.
+        This route requires:
+        - refresh token
+    """
     try:
         Authorize.jwt_refresh_token_required()
     except Exception as e:

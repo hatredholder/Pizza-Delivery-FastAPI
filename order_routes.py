@@ -13,20 +13,16 @@ order_router = APIRouter(
 
 session=Session(bind=engine)
 
-@order_router.get('/')
-def hello(Authorize: AuthJWT = Depends()):
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
-
-    return {'hello': 'world'}
 
 @order_router.post('/new_order', status_code=status.HTTP_201_CREATED)
 def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
+    """
+        ## Placing a Order
+        This route makes a new order.
+        This route requires:
+        - quantity: integer
+        - pizza_size: string 
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -60,6 +56,11 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
 
 @order_router.get('/all')
 def list_all_orders(Authorize: AuthJWT = Depends()):
+    """
+        ## Listing all orders
+        This route lists all orders that were made. 
+        Can only be accessed by superusers.
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -82,6 +83,11 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
 
 @order_router.get('/get_order/{id}')
 def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
+    """
+        ## Get an order by ID
+        This route gets anyone's order by ID.
+        Can only be accessed by superusers.
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -104,6 +110,10 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
 @order_router.get('/my_orders')
 def get_user_orders(Authorize: AuthJWT = Depends()):
+    """
+        ## Gets all current user's orders
+        This route gets all the currently logged in user's orders.
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -119,6 +129,11 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
 
 @order_router.get('/my_orders/{id}')
 def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
+    """
+        ## Gets current user's order by id
+        This route gets a currently logged in user's order by id.
+        This route can only return orders that were made by the connected user.
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -142,6 +157,13 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
 @order_router.put('/update/{id}')
 def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
+    """
+        ## Updates current user's order by id
+        This route updates current user's order by id.
+        This route requires:
+        - quantity: integer
+        - pizza_size: string 
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -182,6 +204,13 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
 
 @order_router.patch('/status/update/{id}')
 def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
+    """
+        ## Updates an order's status
+        This route updates an order's status by id.
+        Can only be accessed by superusers.
+        This route requires:
+        - order_status: string
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:
@@ -211,6 +240,10 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
 
 @order_router.delete('/delete/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
+    """
+        ## Deletes an order
+        This route deletes an order by id.
+    """
     try:
         Authorize.jwt_required()
     except Exception as e:

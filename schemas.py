@@ -34,7 +34,7 @@ class OrderModel(BaseModel):
     id: Optional[int]
     quantity: int 
     order_status: Optional[str] = "PENDING" 
-    pizza_size: Optional[str] = "SMALL"
+    pizza_size: str = "SMALL"
     user_id: Optional[int]
 
     class Config:
