@@ -4,7 +4,7 @@ from fastapi_jwt_auth import AuthJWT
 
 from database import Session, engine
 from models import Order, User
-from schemas import OrderModel
+from schemas import OrderModel, OrderStatusModel
 
 order_router = APIRouter(
     prefix="/order",
@@ -162,7 +162,14 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
 
             session.commit()
 
-            return jsonable_encoder(order_to_update)
+            response = {
+                "id": order_to_update.id,
+                "quantity": order_to_update.quantity,
+                "pizza_size": order_to_update.pizza_size,
+                "order_status": order_to_update.order_status
+            }
+
+            return jsonable_encoder(response)
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -172,3 +179,32 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
             detail="This isn't your order"
         )
+
+@order_router.patch('/status/update/{id}')
+def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Token"
+        )
+
+    current_user = Authorize.get_jwt_subject()
+
+    user = session.query(User).filter(User.username == current_user).first()
+    
+    if user.is_staff:
+        order_to_update = session.query(Order).filter(Order.id == id).first()
+
+        order_to_update.order_status = order.order_status
+
+        session.commit()
+
+        response = {
+            "id": order_to_update.id,
+            "quantity": order_to_update.quantity,
+            "pizza_size": order_to_update.pizza_size,
+            "order_status": order_to_update.order_status
+        }
+
+        return jsonable_encoder(response)
