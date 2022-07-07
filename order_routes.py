@@ -5,6 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order, User
 from schemas import OrderModel, OrderStatusModel
+from authorize import jwt_required
 
 order_router = APIRouter(
     prefix="/order",
@@ -23,13 +24,7 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
         - quantity: integer
         - pizza_size: string 
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -61,12 +56,7 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
         This route lists all orders that were made. 
         Can only be accessed by superusers.
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -88,12 +78,7 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
         This route gets anyone's order by ID.
         Can only be accessed by superusers.
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -114,12 +99,7 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
         ## Gets all current user's orders
         This route gets all the currently logged in user's orders.
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -134,12 +114,7 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
         This route gets a currently logged in user's order by id.
         This route can only return orders that were made by the connected user.
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -164,12 +139,7 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
         - quantity: integer
         - pizza_size: string 
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
     try:
         order_to_update = session.query(Order).filter(Order.id == id).first()
 
@@ -211,12 +181,7 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
         This route requires:
         - order_status: string
     """ 
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     current_user = Authorize.get_jwt_subject()
 
@@ -244,12 +209,7 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
         ## Deletes an order
         This route deletes an order by id.
     """
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
+    jwt_required(Authorize)
 
     order_to_delete = session.query(Order).filter(Order.id == id).first()
 
