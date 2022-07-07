@@ -6,6 +6,7 @@ from database import Base
 
 
 class User(Base):
+    """SQLAlchemy User Model"""
     __tablename__ = 'User'
 
     id = Column(Integer, primary_key=True)
@@ -21,7 +22,7 @@ class User(Base):
         return f"<User {self.username}>"
 
 class Order(Base):
-
+    """SQLAlchemy Pizza Order Model"""
     ORDER_STATUSES = (
         ('PENDING', 'Pending'),
         ('IN-TRANSIT', 'In-Transit'),

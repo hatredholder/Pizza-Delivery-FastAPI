@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order, User
 from schemas import OrderModel, OrderStatusModel
-from authorize import jwt_required
+from utils import jwt_required, get_current_user
 
 order_router = APIRouter(
     prefix="/order",
@@ -26,28 +26,34 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
+    user = get_current_user(Authorize, session)
 
-    user = session.query(User).filter(User.username == current_user).first()
+    if order.pizza_size in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
 
-    new_order = Order(
+        new_order = Order(
         pizza_size = order.pizza_size,
         quantity = order.quantity
+        )
+
+        new_order.user = user
+
+        session.add(new_order)
+        session.commit()
+
+        response = {
+            "pizza_size": new_order.pizza_size,
+            "quantity": new_order.quantity,
+            "id": new_order.id,
+            "order_status": new_order.order_status
+        }
+
+        return jsonable_encoder(response) 
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
     )
-
-    new_order.user = user
-
-    session.add(new_order)
-    session.commit()
-
-    response = {
-        "pizza_size": new_order.pizza_size,
-        "quantity": new_order.quantity,
-        "id": new_order.id,
-        "order_status": new_order.order_status
-    }
-
-    return jsonable_encoder(response) 
+    
 
 @order_router.get('/all')
 def list_all_orders(Authorize: AuthJWT = Depends()):
@@ -58,18 +64,17 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
-
-    user = session.query(User).filter(User.username == current_user).first()
+    user = get_current_user(Authorize, session)
 
     if user.is_staff:
         orders = session.query(Order).all()
 
         return jsonable_encoder(orders)
 
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not a superuser"
-        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You are not a superuser"
+    )
 
 @order_router.get('/get_order/{id}')
 def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
@@ -80,18 +85,17 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
-
-    user = session.query(User).filter(User.username == current_user).first()
+    user = get_current_user(Authorize, session)
 
     if user.is_staff:
         order = session.query(Order).filter(Order.id == id).first()
 
         return jsonable_encoder(order)
 
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not a superuser"
-        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You are not a superuser"
+    )
 
 @order_router.get('/my_orders')
 def get_user_orders(Authorize: AuthJWT = Depends()):
@@ -101,9 +105,7 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
-
-    user = session.query(User).filter(User.username == current_user).first()
+    user = get_current_user(Authorize, session)
 
     return jsonable_encoder(user.orders)
 
@@ -116,9 +118,7 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
-
-    user = session.query(User).filter(User.username == current_user).first()
+    user = get_current_user(Authorize, session)
 
     orders = user.orders
 
@@ -126,7 +126,8 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
         if i.id == id:
             return i
 
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
         detail="You dont have an order with the given id"    
     )
 
@@ -143,9 +144,7 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
     try:
         order_to_update = session.query(Order).filter(Order.id == id).first()
 
-        current_user = Authorize.get_jwt_subject()
-
-        user = session.query(User).filter(User.username == current_user).first()
+        user = get_current_user(Authorize, session)
 
         if order_to_update.user_id == user.id:
 
@@ -164,13 +163,15 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
             return jsonable_encoder(response)
 
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Id"
         )
     
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="This isn't your order"
-        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="This isn't your order"
+    )
 
 @order_router.patch('/status/{id}')
 def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
@@ -183,25 +184,45 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
     """ 
     jwt_required(Authorize)
 
-    current_user = Authorize.get_jwt_subject()
-
-    user = session.query(User).filter(User.username == current_user).first()
+    user = get_current_user(Authorize, session)
     
-    if user.is_staff:
-        order_to_update = session.query(Order).filter(Order.id == id).first()
+    try:
+    
+        if user.is_staff:
 
-        order_to_update.order_status = order.order_status
+            if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
 
-        session.commit()
+                order_to_update = session.query(Order).filter(Order.id == id).first()
 
-        response = {
-            "id": order_to_update.id,
-            "quantity": order_to_update.quantity,
-            "pizza_size": order_to_update.pizza_size,
-            "order_status": order_to_update.order_status
-        }
+                order_to_update.order_status = order.order_status
 
-        return jsonable_encoder(response)
+                session.commit()
+
+                response = {
+                    "id": order_to_update.id,
+                    "quantity": order_to_update.quantity,
+                    "pizza_size": order_to_update.pizza_size,
+                    "order_status": order_to_update.order_status
+                }
+
+                return jsonable_encoder(response)
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not a superuser"
+        )
+
+    except AttributeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Id"
+        )
+
 
 @order_router.delete('/delete/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
