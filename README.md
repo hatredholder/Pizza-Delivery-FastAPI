@@ -23,14 +23,19 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 | *GET* | ```/order/get_order/{order_id}/``` | _Retrieve an order_|_Superuser_|
 | *PUT* | ```/order/status/{order_id}/``` | _Update order status_|_Superuser_|
 
-
 ## Instructions
+
+1. Clone this project
+2. Start a new Virtualenv, activate it, type in console `pip install -r requirements.txt`
+3. Set up a new PostgreSQL database and set its URL in your `database.py`
+```
+engine=create_engine('postgresql://postgres:<username>:<password>@localhost/<db_name>')
+```
+4. Create your database by running `python init_db.py`
+5. Run the API by typing in console `uvicorn main:app`
 
 ## Technologies
 
-## To Do/To Add
+Backend: FastAPI v0.78, SQLAlchemy v1.4. 
 
-
-
-
-
+Database: PostgreSQL.
