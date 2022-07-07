@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi_jwt_auth import AuthJWT
+import sqlalchemy
 
 from database import Session, engine
 from models import Order, User
@@ -228,14 +229,32 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
     """
         ## Deletes an order
-        This route deletes an order by id.
+        This route deletes an order by id if user who requested owns the order
+        or the user is superuser.
     """
     jwt_required(Authorize)
 
-    order_to_delete = session.query(Order).filter(Order.id == id).first()
+    user = get_current_user(Authorize, session)
 
-    session.delete(order_to_delete)
+    try:
 
-    session.commit()
+        order_to_delete = session.query(Order).filter(Order.id == id).first()
 
-    return order_to_delete
+        if order_to_delete.user_id == user.id or user.is_staff:
+
+            session.delete(order_to_delete)
+
+            session.commit()
+
+            return {"message":"Order successfully deleted"}
+
+    except AttributeError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Id"
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="This isn't your order"
+    )
