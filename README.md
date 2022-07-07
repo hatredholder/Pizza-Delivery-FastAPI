@@ -2,7 +2,7 @@
 
 :pizza: :pizza: :pizza:
 
-A Pizza Delivery API project built to learn FastAPI and SQLAlchemy.
+A Pizza Delivery API project built to learn FastAPI and SQLAlchemy. Uses JWT Authentication.
 
 Scroll down to see the **Instructions** on how to launch this project properly. 
 
