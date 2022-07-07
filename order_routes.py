@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi_jwt_auth import AuthJWT
-import sqlalchemy
 
 from database import Session, engine
-from models import Order, User
+from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import jwt_required, get_current_user
 
@@ -32,8 +31,8 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
     if order.pizza_size in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
 
         new_order = Order(
-        pizza_size = order.pizza_size,
-        quantity = order.quantity
+            pizza_size = order.pizza_size,
+            quantity = order.quantity
         )
 
         new_order.user = user
