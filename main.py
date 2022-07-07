@@ -13,6 +13,16 @@ from schemas import Settings
 app = FastAPI()
 
 def custom_openapi():
+    """
+        Custom JWT Authorization for Swagger UI
+        How to use:
+        1) Go to /docs/
+        2) Press the "Authorize" button
+        3) Enter "Bearer YOUR_ACCESS_TOKEN" 
+        where YOUR_ACCESS_TOKEN is your JWT access token
+        4) Press "Authorize"
+        5) You're JWT authorized
+    """
     if app.openapi_schema:
         return app.openapi_schema
 
@@ -56,11 +66,15 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
-
 app.openapi = custom_openapi
 
 @AuthJWT.load_config
 def get_config():
+    """
+        Get Config function for the fastapi_jwt_auth module
+        returns Settings which is a pydantic model,
+        that has a authjwt_secret_key variable
+    """
     return Settings()
 
 app.include_router(auth_router)
