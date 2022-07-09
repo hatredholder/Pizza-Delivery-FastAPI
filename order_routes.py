@@ -113,6 +113,8 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
+    print(user.orders)
+
     return jsonable_encoder(user.orders)
 
 @order_router.get('/my_orders/{id}')
@@ -230,7 +232,7 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
         )
 
 
-@order_router.delete('/delete/{id}', status_code = status.HTTP_204_NO_CONTENT)
+@order_router.delete('/delete/{id}', status_code = status.HTTP_200_OK)
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
     """
         ## Deletes an order
@@ -255,7 +257,7 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
 
     except AttributeError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Invalid Id"
         )
 
