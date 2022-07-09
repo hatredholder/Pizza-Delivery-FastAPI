@@ -89,6 +89,12 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     if user.is_staff:
         order = session.query(Order).filter(Order.id == id).first()
+        
+        if order == None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Order with the given ID doesn't exist"
+            )
 
         return jsonable_encoder(order)
 
