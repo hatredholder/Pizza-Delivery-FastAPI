@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import jwt_required, get_current_user
+from utils import jwt_required, get_current_user, find_user_order
 
 order_router = APIRouter(
     prefix="/order",
@@ -134,14 +134,7 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     orders = user.orders
 
-    for i in orders:
-        if i.id == id:
-            return i
-
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="You dont have an order with the given id"    
-    )
+    return find_user_order(id, orders)
 
 @order_router.put('/update/{id}')
 def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
