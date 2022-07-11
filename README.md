@@ -39,3 +39,7 @@ engine=create_engine('postgresql://postgres:<username>:<password>@localhost/<db_
 Backend: FastAPI v0.78, SQLAlchemy v1.4. 
 
 Database: PostgreSQL.
+
+## To Do/To Add
+
+- [ ] Optimize all code; 
