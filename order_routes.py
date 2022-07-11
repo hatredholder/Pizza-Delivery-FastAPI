@@ -146,28 +146,36 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
         - pizza_size: string 
     """
     jwt_required(Authorize)
-    try:
-        order_to_update = session.query(Order).filter(Order.id == id).first()
+    order_to_update = session.query(Order).filter(Order.id == id).first()
 
-        user = get_current_user(Authorize, session)
+    user = get_current_user(Authorize, session)
+
+    try:
 
         if order_to_update.user_id == user.id:
 
-            order_to_update.quantity = order.quantity
-            order_to_update.pizza_size = order.pizza_size
+            if order.pizza_size in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
 
-            session.commit()
+                order_to_update.quantity = order.quantity
+                order_to_update.pizza_size = order.pizza_size
 
-            response = {
-                "id": order_to_update.id,
-                "quantity": order_to_update.quantity,
-                "pizza_size": order_to_update.pizza_size,
-                "order_status": order_to_update.order_status
-            }
+                session.commit()
 
-            return jsonable_encoder(response)
+                response = {
+                    "id": order_to_update.id,
+                    "quantity": order_to_update.quantity,
+                    "pizza_size": order_to_update.pizza_size,
+                    "order_status": order_to_update.order_status
+                }
 
-    except Exception as e:
+                return jsonable_encoder(response)
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
+            )
+
+    except AttributeError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Id"
