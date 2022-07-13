@@ -27,7 +27,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 
 1. Clone this project
 2. Start a new Virtualenv, activate it, type in console `pip install -r requirements.txt`
-3. Set up a new PostgreSQL database and set its URL in your `database.py`
+3. Set up a new PostgreSQL database and set its URL in `database.py`
 ```
 engine=create_engine('postgresql://postgres:<username>:<password>@localhost/<db_name>')
 ```
