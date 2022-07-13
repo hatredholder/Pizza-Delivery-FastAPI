@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
-from models import User, Order
+from models import Order, User
 
 
 def jwt_required(Authorize: AuthJWT):

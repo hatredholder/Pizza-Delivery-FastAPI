@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import jwt_required, get_current_user, find_user_order
+from utils import find_user_order, get_current_user, jwt_required
 
 order_router = APIRouter(
     prefix="/order",
