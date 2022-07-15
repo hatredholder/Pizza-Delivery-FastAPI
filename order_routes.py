@@ -43,7 +43,7 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
         return jsonable_encoder(
             response_order(
             new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status)
-            ) 
+        ) 
 
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
@@ -164,7 +164,10 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
                     "order_status": order_to_update.order_status
                 }
 
-                return jsonable_encoder(response)
+                return jsonable_encoder(
+                    response_order(
+                    order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+                ) 
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -207,14 +210,10 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
 
                 session.commit()
 
-                response = {
-                    "id": order_to_update.id,
-                    "quantity": order_to_update.quantity,
-                    "pizza_size": order_to_update.pizza_size,
-                    "order_status": order_to_update.order_status
-                }
-
-                return jsonable_encoder(response)
+                return jsonable_encoder(
+                    response_order(
+                    order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+                )
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
