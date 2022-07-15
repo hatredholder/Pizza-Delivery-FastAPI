@@ -35,3 +35,12 @@ def find_user_order(id: int, orders: Order):
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="You dont have an order with the given id"    
     )
+
+def response_order(id: int, quantity: int, pizza_size: str, order_status: str):
+    response = {
+        "id": id,
+        "quantity": quantity,
+        "pizza_size": pizza_size,
+        "order_status": order_status
+    }
+    return response
