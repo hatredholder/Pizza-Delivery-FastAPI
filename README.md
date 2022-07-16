@@ -29,7 +29,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 2. Start a new Virtualenv, activate it, type in console `pip install -r requirements.txt`
 3. Set up a new PostgreSQL database and set its URL in `database.py`
 ```
-engine=create_engine('postgresql://postgres:<username>:<password>@localhost/<db_name>')
+engine=create_engine('postgresql://<username>:<password>@localhost/<db_name>')
 ```
 4. Create your database by running `python init_db.py`
 5. Run the API by typing in console `uvicorn main:app`
