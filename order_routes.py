@@ -113,7 +113,7 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
-    if user.orders == []:
+    if not user.orders:
         return {"message":"You haven't made any orders yet"}
 
     return jsonable_encoder(user.orders)
