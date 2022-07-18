@@ -10,7 +10,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 
 | METHOD | ROUTE | FUNCTIONALITY |ACCESS|
 | ------- | ----- | ------------- | ------------- |
-| *GET* | ```/docs/``` | _View API documentation_|_All Users_|
+| *GET* | ```/docs/``` | _View API Documentation_|_All Users_|
 | *POST* | ```/auth/signup/``` | _Signup new User_| _All Users_|
 | *POST* | ```/auth/login/``` | _Login User_|_All Users_|
 | *POST* | ```/auth/refresh/``` | _Refresh JWT Access Token_|_All Users_|
@@ -21,7 +21,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 | *DELETE* | ```/order/delete/{order_id}/``` | _Delete an Order_ |_All Users_|
 | *GET* | ```/order/all/``` | _List all Orders made_|_Superuser_|
 | *GET* | ```/order/get_order/{order_id}/``` | _Retrieve an Order_|_Superuser_|
-| *PUT* | ```/order/status/{order_id}/``` | _Update Order status_|_Superuser_|
+| *PUT* | ```/order/status/{order_id}/``` | _Update Order Status_|_Superuser_|
 
 ## Instructions
 
