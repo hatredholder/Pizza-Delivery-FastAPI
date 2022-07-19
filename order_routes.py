@@ -66,7 +66,7 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
     if user.is_staff:
         orders = session.query(Order).all()
 
-        if orders == []:
+        if not orders:
             return {"message":"No orders were made yet"}
 
         return jsonable_encoder(orders)
