@@ -6,7 +6,7 @@ from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (find_user_order, get_current_user, jwt_required,
-                   response_order)
+                   response_order, check_if_pizza_size_valid)
 
 order_router = APIRouter(
     prefix="/order",
@@ -29,27 +29,22 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
-    if order.pizza_size in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
+    check_if_pizza_size_valid(order.pizza_size)
 
-        new_order = Order(
-            pizza_size = order.pizza_size,
-            quantity = order.quantity
-        )
-
-        new_order.user = user
-
-        session.add(new_order)
-        session.commit()
-
-        return jsonable_encoder(
-            response_order(
-            new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status)
-        ) 
-
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
+    new_order = Order(
+        pizza_size = order.pizza_size,
+        quantity = order.quantity
     )
+
+    new_order.user = user
+
+    session.add(new_order)
+    session.commit()
+
+    return jsonable_encoder(
+        response_order(
+        new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status)
+    ) 
     
 
 @order_router.get('/all')
@@ -151,29 +146,25 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
 
         if order_to_update.user_id == user.id:
 
-            if order.pizza_size in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
+            check_if_pizza_size_valid(order.pizza_size)
 
-                order_to_update.quantity = order.quantity
-                order_to_update.pizza_size = order.pizza_size
+            order_to_update.quantity = order.quantity
+            order_to_update.pizza_size = order.pizza_size
 
-                session.commit()
+            session.commit()
 
-                response = {
-                    "id": order_to_update.id,
-                    "quantity": order_to_update.quantity,
-                    "pizza_size": order_to_update.pizza_size,
-                    "order_status": order_to_update.order_status
-                }
+            response = {
+                "id": order_to_update.id,
+                "quantity": order_to_update.quantity,
+                "pizza_size": order_to_update.pizza_size,
+                "order_status": order_to_update.order_status
+            }
 
-                return jsonable_encoder(
-                    response_order(
-                    order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
-                ) 
+            return jsonable_encoder(
+                response_order(
+                order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+            ) 
 
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
-            )
 
     except AttributeError as e:
         raise HTTPException(

@@ -44,3 +44,10 @@ def response_order(id: int, quantity: int, pizza_size: str, order_status: str):
         "order_status": order_status
     }
     return response
+
+def check_if_pizza_size_valid(pizza_size: str):
+    if pizza_size not in ['SMALL', 'MEDIUM', 'LARGE', 'EXTRA_LARGE']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
+        )
