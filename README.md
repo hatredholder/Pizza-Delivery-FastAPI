@@ -31,7 +31,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 ```
 engine=create_engine('postgresql://<username>:<password>@localhost/<db_name>')
 ```
-4. Create your database by running `python init_db.py`
+4. Create your database by running `py init_db.py`
 5. Run the API by typing in console `uvicorn main:app`
 
 ## Technologies
