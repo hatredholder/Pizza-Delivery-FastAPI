@@ -51,3 +51,10 @@ def check_if_pizza_size_valid(pizza_size: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
         )
+
+def check_if_user_is_staff(is_staff: bool):
+    if not is_staff:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not a superuser"
+        )

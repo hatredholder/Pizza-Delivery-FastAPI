@@ -6,7 +6,7 @@ from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (find_user_order, get_current_user, jwt_required,
-                   response_order, check_if_pizza_size_valid)
+                   response_order, check_if_pizza_size_valid, check_if_user_is_staff)
 
 order_router = APIRouter(
     prefix="/order",
@@ -58,18 +58,15 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
-    if user.is_staff:
-        orders = session.query(Order).all()
+    check_if_user_is_staff(user.is_staff)
 
-        if not orders:
-            return {"message":"No orders were made yet"}
+    orders = session.query(Order).all()
 
-        return jsonable_encoder(orders)
+    if not orders:
+        return {"message":"No orders were made yet"}
 
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="You are not a superuser"
-    )
+    return jsonable_encoder(orders)
+
 
 @order_router.get('/get_order/{id}')
 def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
@@ -82,21 +79,19 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
-    if user.is_staff:
-        order = session.query(Order).filter(Order.id == id).first()
-        
-        if not order:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Order with the given ID doesn't exist"
-            )
+    check_if_user_is_staff(user.is_staff)
 
-        return jsonable_encoder(order)
+    order = session.query(Order).filter(Order.id == id).first()
+    
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order with the given ID doesn't exist"
+        )
 
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="You are not a superuser"
-    )
+    return jsonable_encoder(order)
+
+
 
 @order_router.get('/my_orders')
 def get_user_orders(Authorize: AuthJWT = Depends()):
@@ -192,29 +187,24 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
     
     try:
     
-        if user.is_staff:
+        check_if_user_is_staff(user.is_staff)
 
-            if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
+        if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
 
-                order_to_update = session.query(Order).filter(Order.id == id).first()
+            order_to_update = session.query(Order).filter(Order.id == id).first()
 
-                order_to_update.order_status = order.order_status
+            order_to_update.order_status = order.order_status
 
-                session.commit()
+            session.commit()
 
-                return jsonable_encoder(
-                    response_order(
-                    order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
-                )
-
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
+            return jsonable_encoder(
+                response_order(
+                order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
             )
 
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not a superuser"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
         )
 
     except AttributeError as e:
