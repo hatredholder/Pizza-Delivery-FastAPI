@@ -19,9 +19,9 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 | *GET* | ```/order/my_orders/{order_id}/``` | _Get User's specific Order_|_All Users_|
 | *PUT* | ```/order/update/{order_id}/``` | _Update an Order_|_All Users_|
 | *DELETE* | ```/order/delete/{order_id}/``` | _Delete an Order_ |_All Users_|
-| *GET* | ```/order/all/``` | _List all Orders made_|_Superuser_|
-| *GET* | ```/order/get_order/{order_id}/``` | _Retrieve an Order_|_Superuser_|
-| *PUT* | ```/order/status/{order_id}/``` | _Update Order Status_|_Superuser_|
+| *GET* | ```/order/all/``` | _List all Orders made_|_Superusers_|
+| *GET* | ```/order/get_order/{order_id}/``` | _Retrieve an Order_|_Superusers_|
+| *PUT* | ```/order/status/{order_id}/``` | _Update Order Status_|_Superusers_|
 
 ## Instructions
 
