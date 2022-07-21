@@ -5,9 +5,9 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import (find_user_order, get_current_user, jwt_required,
-                   response_order, check_if_pizza_size_valid, check_if_user_is_staff,
-                   check_if_order_exists)
+from utils import (check_if_order_exists, check_if_pizza_size_valid,
+                   check_if_user_is_staff, find_user_order, get_current_user,
+                   jwt_required, response_order)
 
 order_router = APIRouter(
     prefix="/order",
@@ -47,7 +47,6 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
         new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status)
     ) 
     
-
 @order_router.get('/all')
 def list_all_orders(Authorize: AuthJWT = Depends()):
     """
@@ -68,7 +67,6 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
 
     return jsonable_encoder(orders)
 
-
 @order_router.get('/get_order/{id}')
 def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     """
@@ -87,8 +85,6 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     check_if_order_exists(order)
 
     return jsonable_encoder(order)
-
-
 
 @order_router.get('/my_orders')
 def get_user_orders(Authorize: AuthJWT = Depends()):
@@ -209,7 +205,6 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Id"
         )
-
 
 @order_router.delete('/delete/{id}', status_code = status.HTTP_200_OK)
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
