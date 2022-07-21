@@ -11,7 +11,7 @@ Scroll down to see the **Instructions** on how to launch this project properly.
 | METHOD | ROUTE | FUNCTIONALITY |ACCESS|
 | ------- | ----- | ------------- | ------------- |
 | *GET* | ```/docs/``` | _View API Documentation_|_All Users_|
-| *POST* | ```/auth/signup/``` | _Signup new User_| _All Users_|
+| *POST* | ```/auth/signup/``` | _Sign up new User_| _All Users_|
 | *POST* | ```/auth/login/``` | _Login User_|_All Users_|
 | *POST* | ```/auth/refresh/``` | _Refresh JWT Access Token_|_All Users_|
 | *POST* | ```/order/new_order``` | _Create an Order_|_All Users_|
