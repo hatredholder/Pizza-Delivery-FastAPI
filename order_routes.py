@@ -6,7 +6,8 @@ from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (find_user_order, get_current_user, jwt_required,
-                   response_order, check_if_pizza_size_valid, check_if_user_is_staff)
+                   response_order, check_if_pizza_size_valid, check_if_user_is_staff,
+                   check_if_order_exists)
 
 order_router = APIRouter(
     prefix="/order",
@@ -83,11 +84,7 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     order = session.query(Order).filter(Order.id == id).first()
     
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order with the given ID doesn't exist"
-        )
+    check_if_order_exists(order)
 
     return jsonable_encoder(order)
 

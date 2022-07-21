@@ -70,3 +70,10 @@ def check_if_user_is_staff(is_staff: bool):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You are not a superuser"
         )
+
+def check_if_order_exists(order: object):
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order with the given ID doesn't exist"
+        )
