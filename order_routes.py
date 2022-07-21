@@ -36,7 +36,6 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
         pizza_size = order.pizza_size,
         quantity = order.quantity
     )
-
     new_order.user = user
 
     session.add(new_order)
