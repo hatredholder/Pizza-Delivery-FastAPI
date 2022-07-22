@@ -127,31 +127,23 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
     jwt_required(Authorize)
 
     order_to_update = session.query(Order).filter(Order.id == id).first()
+    check_if_order_exists(order_to_update)
 
     user = get_current_user(Authorize, session)
 
-    try:
+    check_order_ownership_or_staff(order_to_update.id, user.id, user.is_staff)
 
-        check_order_ownership_or_staff(order_to_update.id, user.id, user.is_staff)
+    check_if_pizza_size_valid(order.pizza_size)
 
-        check_if_pizza_size_valid(order.pizza_size)
+    order_to_update.quantity = order.quantity
+    order_to_update.pizza_size = order.pizza_size
 
-        order_to_update.quantity = order.quantity
-        order_to_update.pizza_size = order.pizza_size
+    session.commit()
 
-        session.commit()
-
-        return jsonable_encoder(
-            response_order(
-            order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
-        ) 
-
-
-    except AttributeError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Id"
-        )
+    return jsonable_encoder(
+        response_order(
+        order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+    ) 
 
 @order_router.patch('/status/{id}')
 def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
@@ -205,20 +197,12 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
 
     user = get_current_user(Authorize, session)
 
-    try:
+    order_to_delete = session.query(Order).filter(Order.id == id).first()
+    check_if_order_exists(order_to_delete)
 
-        order_to_delete = session.query(Order).filter(Order.id == id).first()
+    check_order_ownership_or_staff(order_to_delete.id, user.id, user.is_staff)
 
-        check_order_ownership_or_staff(order_to_delete.id, user.id, user.is_staff)
+    session.delete(order_to_delete)
+    session.commit()
 
-        session.delete(order_to_delete)
-
-        session.commit()
-
-        return {"message":"Order successfully deleted"}
-
-    except AttributeError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invalid Id"
-        )
+    return {"message":"Order successfully deleted"}
