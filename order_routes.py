@@ -6,8 +6,8 @@ from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (check_if_order_exists, check_if_pizza_size_valid,
-                   check_if_user_is_staff, find_user_order, get_current_user,
-                   jwt_required, response_order, check_order_ownership_or_staff)
+                   check_if_user_is_staff, find_user_order, find_current_user,
+                   jwt_required, response_order, check_order_ownership_or_staff, find_user_order_by_id)
 
 order_router = APIRouter(
     prefix="/order",
@@ -28,7 +28,7 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     check_if_pizza_size_valid(order.pizza_size)
 
@@ -43,7 +43,8 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
 
     return jsonable_encoder(
         response_order(
-        new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status)
+        new_order.id, new_order.quantity, new_order.pizza_size, new_order.order_status
+        )
     ) 
     
 @order_router.get('/all')
@@ -55,7 +56,7 @@ def list_all_orders(Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     check_if_user_is_staff(user.is_staff)
 
@@ -75,13 +76,11 @@ def get_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     check_if_user_is_staff(user.is_staff)
 
-    order = session.query(Order).filter(Order.id == id).first()
-    
-    check_if_order_exists(order)
+    order = find_user_order_by_id(id, session)
 
     return jsonable_encoder(order)
 
@@ -93,7 +92,7 @@ def get_user_orders(Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     if not user.orders:
         return {"message":"You haven't made any orders yet"}
@@ -109,11 +108,12 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     orders = user.orders
 
     return find_user_order(id, orders)
+
 
 @order_router.put('/update/{id}')
 def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
@@ -126,10 +126,9 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
     """
     jwt_required(Authorize)
 
-    order_to_update = session.query(Order).filter(Order.id == id).first()
-    check_if_order_exists(order_to_update)
+    order_to_update = find_user_order_by_id(id, session)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
     check_order_ownership_or_staff(order_to_update.id, user.id, user.is_staff)
 
@@ -142,7 +141,8 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
 
     return jsonable_encoder(
         response_order(
-        order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+        order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status
+        )
     ) 
 
 @order_router.patch('/status/{id}')
@@ -156,35 +156,27 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
     """ 
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
     
-    try:
-    
-        check_if_user_is_staff(user.is_staff)
+    check_if_user_is_staff(user.is_staff)
 
-        if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
+    if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
 
-            order_to_update = session.query(Order).filter(Order.id == id).first()
+        order_to_update = find_user_order_by_id(id, session)
 
-            order_to_update.order_status = order.order_status
+        order_to_update.order_status = order.order_status
 
-            session.commit()
+        session.commit()
 
-            return jsonable_encoder(
-                response_order(
-                order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
-            )
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
+        return jsonable_encoder(
+            response_order(
+            order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
         )
 
-    except AttributeError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Id"
-        )
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
+    )
 
 @order_router.delete('/delete/{id}', status_code = status.HTTP_200_OK)
 def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
@@ -195,10 +187,9 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
     """
     jwt_required(Authorize)
 
-    user = get_current_user(Authorize, session)
+    user = find_current_user(Authorize, session)
 
-    order_to_delete = session.query(Order).filter(Order.id == id).first()
-    check_if_order_exists(order_to_delete)
+    order_to_delete = find_user_order_by_id(id, session)
 
     check_order_ownership_or_staff(order_to_delete.id, user.id, user.is_staff)
 

@@ -17,7 +17,7 @@ def jwt_required(Authorize: AuthJWT):
             detail="Invalid Token"
         )
 
-def get_current_user(Authorize: AuthJWT, session: Session):
+def find_current_user(Authorize: AuthJWT, session: Session):
     """
         Returns JWT authorized user model
     """
@@ -26,6 +26,19 @@ def get_current_user(Authorize: AuthJWT, session: Session):
     user = session.query(User).filter(User.username == current_user).first()
 
     return user
+
+def find_user_order_by_id(id: int, session: Session):
+    """
+        Returns user order found by id
+    """
+    order = session.query(Order).filter(Order.id == id).first()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order with the given ID doesn't exist"
+        )
+    return order
 
 def find_user_order(id: int, orders: Order):
     """
