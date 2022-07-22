@@ -5,8 +5,8 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import (check_if_order_exists, check_if_pizza_size_valid,
-                   check_if_user_is_staff, find_user_order, find_current_user,
+from utils import (check_if_pizza_size_valid,
+                   check_if_user_is_staff, find_current_user,
                    jwt_required, response_order, check_order_ownership_or_staff, find_user_order_by_id)
 
 order_router = APIRouter(
@@ -110,9 +110,7 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     user = find_current_user(Authorize, session)
 
-    orders = user.orders
-
-    return find_user_order(id, orders)
+    return find_user_order_by_id(id, session)
 
 
 @order_router.put('/update/{id}')

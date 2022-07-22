@@ -40,18 +40,6 @@ def find_user_order_by_id(id: int, session: Session):
         )
     return order
 
-def find_user_order(id: int, orders: Order):
-    """
-        Finds user order, returns exception if it doesn't exist
-    """
-    for i in orders:
-        if i.id == id:
-            return i
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="You dont have an order with the given id"    
-    )
-
 def response_order(id: int, quantity: int, pizza_size: str, order_status: str):
     """
         Creates an order object to return it in the route with jsonable_encoder
@@ -82,13 +70,6 @@ def check_if_user_is_staff(is_staff: bool):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You are not a superuser"
-        )
-
-def check_if_order_exists(order: object):
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order with the given ID doesn't exist"
         )
 
 def check_order_ownership_or_staff(order_id: int, user_id: int, is_staff: bool):
