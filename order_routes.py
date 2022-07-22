@@ -5,9 +5,9 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import (check_if_pizza_size_valid,
-                   check_if_user_is_staff, find_current_user,
-                   jwt_required, response_order, check_order_ownership_or_staff, find_user_order_by_id)
+from utils import (check_if_pizza_size_valid, check_if_user_is_staff,
+                   check_order_ownership_or_staff, find_current_user,
+                   find_user_order_by_id, jwt_required, response_order)
 
 order_router = APIRouter(
     prefix="/order",
