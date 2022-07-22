@@ -7,7 +7,7 @@ from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (check_if_order_exists, check_if_pizza_size_valid,
                    check_if_user_is_staff, find_user_order, get_current_user,
-                   jwt_required, response_order)
+                   jwt_required, response_order, check_order_ownership_or_staff)
 
 order_router = APIRouter(
     prefix="/order",
@@ -125,32 +125,26 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
         - pizza_size: string 
     """
     jwt_required(Authorize)
+
     order_to_update = session.query(Order).filter(Order.id == id).first()
 
     user = get_current_user(Authorize, session)
 
     try:
 
-        if order_to_update.user_id == user.id:
+        check_order_ownership_or_staff(order_to_update.id, user.id, user.is_staff)
 
-            check_if_pizza_size_valid(order.pizza_size)
+        check_if_pizza_size_valid(order.pizza_size)
 
-            order_to_update.quantity = order.quantity
-            order_to_update.pizza_size = order.pizza_size
+        order_to_update.quantity = order.quantity
+        order_to_update.pizza_size = order.pizza_size
 
-            session.commit()
+        session.commit()
 
-            response = {
-                "id": order_to_update.id,
-                "quantity": order_to_update.quantity,
-                "pizza_size": order_to_update.pizza_size,
-                "order_status": order_to_update.order_status
-            }
-
-            return jsonable_encoder(
-                response_order(
-                order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
-            ) 
+        return jsonable_encoder(
+            response_order(
+            order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+        ) 
 
 
     except AttributeError as e:
@@ -158,11 +152,6 @@ def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Id"
         )
-    
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="This isn't your order"
-    )
 
 @order_router.patch('/status/{id}')
 def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = Depends()):
@@ -220,21 +209,16 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
 
         order_to_delete = session.query(Order).filter(Order.id == id).first()
 
-        if order_to_delete.user_id == user.id or user.is_staff:
+        check_order_ownership_or_staff(order_to_delete.id, user.id, user.is_staff)
 
-            session.delete(order_to_delete)
+        session.delete(order_to_delete)
 
-            session.commit()
+        session.commit()
 
-            return {"message":"Order successfully deleted"}
+        return {"message":"Order successfully deleted"}
 
     except AttributeError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Invalid Id"
         )
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="This isn't your order"
-    )

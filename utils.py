@@ -77,3 +77,10 @@ def check_if_order_exists(order: object):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order with the given ID doesn't exist"
         )
+
+def check_order_ownership_or_staff(order_id: int, user_id: int, is_staff: bool):
+    if order_id != user_id and not is_staff:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This isn't your order"
+        )
