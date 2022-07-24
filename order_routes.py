@@ -7,7 +7,7 @@ from models import Order
 from schemas import OrderModel, OrderStatusModel
 from utils import (check_if_pizza_size_valid, check_if_user_is_staff,
                    check_order_ownership_or_staff, find_current_user,
-                   find_user_order_by_id, jwt_required, response_order)
+                   find_user_order_by_id, jwt_required, response_order, create_new_order)
 
 order_router = APIRouter(
     prefix="/order",
@@ -32,12 +32,8 @@ def place_an_order(order: OrderModel, Authorize: AuthJWT = Depends()):
 
     check_if_pizza_size_valid(order.pizza_size)
 
-    new_order = Order(
-        pizza_size = order.pizza_size,
-        quantity = order.quantity
-    )
-    new_order.user = user
-
+    new_order = create_new_order(order.pizza_size, order.quantity, user)
+    
     session.add(new_order)
     session.commit()
 

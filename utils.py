@@ -78,3 +78,11 @@ def check_order_ownership_or_staff(order_id: int, user_id: int, is_staff: bool):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="This isn't your order"
         )
+
+def create_new_order(pizza_size: str, quantity: int, user: User):
+    new_order = Order(
+        pizza_size = pizza_size,
+        quantity = quantity
+    )
+    new_order.user = user
+    return new_order
