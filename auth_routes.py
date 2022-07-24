@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi_jwt_auth import AuthJWT
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 
 from database import Session, engine
 from models import User
 from schemas import LoginModel, SignUpModel
+from utils import (check_if_email_already_used, check_if_username_already_used,
+                   create_new_user)
 
 auth_router = APIRouter(
     prefix="/auth",
@@ -29,33 +31,17 @@ def signup(user: SignUpModel):
         - is_staff: bool
         - is_active: bool
     """
-    db_email = session.query(User).filter(User.email==user.email).first()
+    
+    check_if_email_already_used(user.email, session)
 
-    if db_email:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists"
-        )
+    check_if_username_already_used(user.username, session)
 
-    db_username = session.query(User).filter(User.username==user.username).first()
-
-    if db_username:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this username already exists"
-        )
-
-    new_user = User(
-        username = user.username,
-        email = user.email,
-        password = generate_password_hash(user.password),
-        is_staff=user.is_staff,
-        is_active=user.is_active
-    )
+    new_user = create_new_user(user.username, user.email, user.password, user.is_staff, user.is_active)
 
     session.add(new_user)
-
     session.commit()
 
-    return new_user
+    return {'message':'Success! You\'ve just signed up!'}
 
 @auth_router.post('/login', status_code=status.HTTP_200_OK)
 def login(user: LoginModel, Authorize: AuthJWT=Depends()):

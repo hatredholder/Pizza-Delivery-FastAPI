@@ -2,8 +2,39 @@ from fastapi import HTTPException, status
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
+from werkzeug.security import check_password_hash, generate_password_hash
 from models import Order, User
 
+
+### auth_routes
+
+def check_if_email_already_used(user_email: str, session: Session):
+    db_email = session.query(User).filter(User.email==user_email).first()
+
+    if db_email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
+
+def check_if_username_already_used(user_username: str, session: Session):
+    db_username = session.query(User).filter(User.username==user_username).first()
+
+    if db_username:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this username already exists"
+        )
+
+def create_new_user(user_username: str, user_email: str, user_password: str, user_is_staff: bool, user_is_active: bool):
+    new_user = User(
+        username = user_username,
+        email = user_email,
+        password = generate_password_hash(user_password),
+        is_staff=user_is_staff,
+        is_active=user_is_active
+    )        
+    return new_user
+    
+### order_routes
 
 def jwt_required(Authorize: AuthJWT):
     """
