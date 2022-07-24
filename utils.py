@@ -83,6 +83,9 @@ def check_if_user_is_staff(is_staff: bool):
         )
 
 def check_order_ownership_or_staff(order_id: int, user_id: int, is_staff: bool):
+    """
+        Checks if user owns the order or if the user is a superuser, returns exception if both are false
+    """
     if order_id != user_id and not is_staff:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -90,6 +93,9 @@ def check_order_ownership_or_staff(order_id: int, user_id: int, is_staff: bool):
         )
 
 def create_new_order(pizza_size: str, quantity: int, user: User):
+    """
+        Creates and returns a new order
+    """
     new_order = Order(
         pizza_size = pizza_size,
         quantity = quantity
