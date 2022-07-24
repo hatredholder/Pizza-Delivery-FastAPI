@@ -5,9 +5,10 @@ from fastapi_jwt_auth import AuthJWT
 from database import Session, engine
 from models import Order
 from schemas import OrderModel, OrderStatusModel
-from utils import (check_if_pizza_size_valid, check_if_user_is_staff,
-                   check_order_ownership_or_staff, find_current_user,
-                   find_user_order_by_id, jwt_required, response_order, create_new_order)
+from utils import (check_if_order_status_valid, check_if_pizza_size_valid,
+                   check_if_user_is_staff, check_order_ownership_or_staff,
+                   create_new_order, find_current_user, find_user_order_by_id,
+                   jwt_required, response_order)
 
 order_router = APIRouter(
     prefix="/order",
@@ -154,22 +155,17 @@ def update_order_status(id: int, order: OrderStatusModel, Authorize: AuthJWT = D
     
     check_if_user_is_staff(user.is_staff)
 
-    if order.order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
+    check_if_order_status_valid(order.order_status)
 
-        order_to_update = find_user_order_by_id(id, session)
+    order_to_update = find_user_order_by_id(id, session)
+    order_to_update.order_status = order.order_status
 
-        order_to_update.order_status = order.order_status
+    session.commit()
 
-        session.commit()
-
-        return jsonable_encoder(
-            response_order(
-            order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status)
+    return jsonable_encoder(
+        response_order(
+        order_to_update.id, order_to_update.quantity, order_to_update.pizza_size, order_to_update.order_status
         )
-
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
     )
 
 @order_router.delete('/delete/{id}', status_code = status.HTTP_200_OK)

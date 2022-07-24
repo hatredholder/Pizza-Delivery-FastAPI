@@ -62,6 +62,16 @@ def check_if_pizza_size_valid(pizza_size: str):
             detail="Wrong pizza size, available pizza sizes are: SMALL, MEDIUM, LARGE, EXTRA_LARGE"
         )
 
+def check_if_order_status_valid(order_status: str):
+    """
+        Checks if given order_status is valid, returns exception if it isn't
+    """
+    if not order_status in ['PENDING', 'IN-TRANSIT', 'DELIVERED']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Wrong order status, available statuses are: PENDING, IN-TRANSIT, DELIVERED"
+    )    
+
 def check_if_user_is_staff(is_staff: bool):
     """
         Checks if user is staff, returns exception if he isn't
