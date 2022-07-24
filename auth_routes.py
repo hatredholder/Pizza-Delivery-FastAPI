@@ -7,7 +7,7 @@ from database import Session, engine
 from models import User
 from schemas import LoginModel, SignUpModel
 from utils import (check_if_email_already_used, check_if_username_already_used,
-                   create_new_user)
+                   create_new_user, check_if_user_exists_and_check_password, find_user, response_token)
 
 auth_router = APIRouter(
     prefix="/auth",
@@ -52,23 +52,17 @@ def login(user: LoginModel, Authorize: AuthJWT=Depends()):
         - username: string
         - password: string
     """
-    db_user = session.query(User).filter(User.username==user.username).first()
+    db_user = find_user(user.username, session)
 
-    if db_user and check_password_hash(db_user.password, user.password):
-        access_token = Authorize.create_access_token(subject=db_user.username)
-        refresh_token = Authorize.create_refresh_token(subject=db_user.username)
+    check_if_user_exists_and_check_password(user.username, user.password, db_user)
 
-        response = {
-            "access": access_token,
-            "refresh": refresh_token
-        }
+    access_token = Authorize.create_access_token(subject=db_user.username)
+    refresh_token = Authorize.create_refresh_token(subject=db_user.username)
 
-        return jsonable_encoder(response)
+    response = response_token(access_token, refresh_token)
+
+    return jsonable_encoder(response)
         
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-        detail="Invalid Username or Password"
-    )
-
 @auth_router.get('/refresh')
 def refresh_tokens(Authorize: AuthJWT = Depends()):
     """

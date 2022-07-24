@@ -9,6 +9,9 @@ from models import Order, User
 ### auth_routes
 
 def check_if_email_already_used(user_email: str, session: Session):
+    """
+        Checks if given email is already used on another account, returns an exception if it is
+    """
     db_email = session.query(User).filter(User.email==user_email).first()
 
     if db_email:
@@ -17,6 +20,9 @@ def check_if_email_already_used(user_email: str, session: Session):
         )
 
 def check_if_username_already_used(user_username: str, session: Session):
+    """
+        Checks if given username is already used on another account, returns an exception if it is
+    """
     db_username = session.query(User).filter(User.username==user_username).first()
 
     if db_username:
@@ -25,6 +31,9 @@ def check_if_username_already_used(user_username: str, session: Session):
         )
 
 def create_new_user(user_username: str, user_email: str, user_password: str, user_is_staff: bool, user_is_active: bool):
+    """
+        Creates a new user
+    """
     new_user = User(
         username = user_username,
         email = user_email,
@@ -33,7 +42,34 @@ def create_new_user(user_username: str, user_email: str, user_password: str, use
         is_active=user_is_active
     )        
     return new_user
-    
+
+def find_user(user_username: str, session: Session):
+    """
+        Finds a user by given username
+    """
+    db_user = session.query(User).filter(User.username==user_username).first()
+
+    return db_user
+
+def check_if_user_exists_and_check_password(user_username, user_password, db_user: User):
+    """
+        Checks if user exists and checks if password is right
+    """
+    if not db_user or not check_password_hash(db_user.password, user_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Invalid Username or Password"
+    )
+
+def response_token(access_token: str, refresh_token: str):
+    """
+        Creates an order object to return it in the route 
+    """
+    response = {
+        "access": access_token,
+        "refresh": refresh_token
+    }
+    return response
+
 ### order_routes
 
 def jwt_required(Authorize: AuthJWT):
