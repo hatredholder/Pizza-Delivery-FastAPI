@@ -109,7 +109,6 @@ def get_user_order_by_id(id: int, Authorize: AuthJWT = Depends()):
 
     return find_user_order_by_id(id, session)
 
-
 @order_router.put('/update/{id}')
 def update_order_by_id(id: int, order: OrderModel, Authorize: AuthJWT = Depends()):
     """
@@ -187,3 +186,4 @@ def delete_an_order(id: int, Authorize: AuthJWT = Depends()):
     session.commit()
 
     return {"message":"Order successfully deleted"}
+    

@@ -6,8 +6,10 @@ from werkzeug.security import check_password_hash
 from database import Session, engine
 from models import User
 from schemas import LoginModel, SignUpModel
-from utils import (check_if_email_already_used, check_if_username_already_used,
-                   create_new_user, check_if_user_exists_and_check_password, find_user, response_token)
+from utils import (check_if_email_already_used,
+                   check_if_user_exists_and_check_password,
+                   check_if_username_already_used, create_new_user, find_user,
+                   response_token)
 
 auth_router = APIRouter(
     prefix="/auth",
@@ -17,9 +19,7 @@ auth_router = APIRouter(
 session=Session(bind=engine)
 
 
-@auth_router.post('/signup', 
-    status_code=status.HTTP_201_CREATED
-)
+@auth_router.post('/signup', status_code=status.HTTP_201_CREATED)
 def signup(user: SignUpModel):
     """
         ## Creates a user
@@ -62,25 +62,3 @@ def login(user: LoginModel, Authorize: AuthJWT=Depends()):
     response = response_token(access_token, refresh_token)
 
     return jsonable_encoder(response)
-        
-@auth_router.get('/refresh')
-def refresh_tokens(Authorize: AuthJWT = Depends()):
-    """
-        ## Refreshes an access token 
-        This route refreshes an access token.
-        This route requires:
-        - refresh token
-    """
-    try:
-        Authorize.jwt_refresh_token_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Please provide a valid refresh token"
-        )
-
-    current_user = Authorize.get_jwt_subject()
-
-    access_token = Authorize.create_access_token(subject=current_user)
-
-    return jsonable_encoder({"access": access_token})

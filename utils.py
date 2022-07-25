@@ -1,10 +1,9 @@
 from fastapi import HTTPException, status
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
-
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import Order, User
 
+from models import Order, User
 
 ### auth_routes
 
@@ -169,3 +168,4 @@ def create_new_order(pizza_size: str, quantity: int, user: User):
     )
     new_order.user = user
     return new_order
+    

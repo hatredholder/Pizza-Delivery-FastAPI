@@ -79,5 +79,3 @@ def get_config():
 
 app.include_router(auth_router)
 app.include_router(order_router)
-
-
