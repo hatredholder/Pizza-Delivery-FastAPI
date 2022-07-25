@@ -42,4 +42,4 @@ Database: PostgreSQL.
 
 ## To Do/To Add
 
-- [ ] Optimize code; 
+- [x] Optimize code; 
