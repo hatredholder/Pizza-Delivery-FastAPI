@@ -14,7 +14,8 @@ def check_if_email_already_used(user_email: str, session: Session):
     db_email = session.query(User).filter(User.email==user_email).first()
 
     if db_email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this email already exists"
         )
 
@@ -25,7 +26,8 @@ def check_if_username_already_used(user_username: str, session: Session):
     db_username = session.query(User).filter(User.username==user_username).first()
 
     if db_username:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this username already exists"
         )
 
@@ -55,7 +57,8 @@ def check_if_user_exists_and_check_password(user_username, user_password, db_use
         Checks if user exists and checks if password is right
     """
     if not db_user or not check_password_hash(db_user.password, user_password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Invalid Username or Password"
     )
 
